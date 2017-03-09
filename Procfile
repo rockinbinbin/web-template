@@ -1,2 +1,2 @@
 web: node index.js
-release: migrate down
+release: migrate up
