@@ -1,2 +1,2 @@
 web: node index.js
-release: migrate up
+release: rm migration/.migrate; migrate up
