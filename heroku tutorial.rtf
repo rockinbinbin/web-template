@@ -1,0 +1,188 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red249\green217\blue36;\red52\green61\blue68;\red246\green246\blue246;
+\red158\green184\blue234;\red208\green254\blue47;}
+\margl1440\margr1440\vieww11340\viewh10700\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs28 \cf0 This tutorial clones a node project from a github repo, spins up an instance using heroku, pushes to local git, and associates a postgres db.\
+\
+#### terminal 1
+\b0\fs24 \
+\
+heroku login\
+\
+robinmehta94@gmail.com\
+\
+node -v\
+\
+npm -v\
+\
+git \'97version\
+\
+(brew upgrade) (brew upgrade git)\
+\
+git clone https://github.com/heroku/node-js-getting-started.git\
+\
+cd node-js-getting-started\
+\
+node-js-getting-started heroku create\
+\
+git push heroku master\
+\
+heroku ps:scale web=1 (or 0, depending on how many instances you want)\
+\
+heroku open\
+\
+heroku logs \'97tail\
+\
+heroku ps\
+\
+
+\b heroku local web   // to run node app on port 5000 // go to http://localhost:5000\
+\
+
+\fs28 ####### terminal 2: (in project directory)
+\fs24 \
+\
+
+\b0 sudo npm init
+\b \
+\
+
+\b0 sudo npm install
+\b \
+\
+
+\b0 npm install \'97save \'97save-exact cool-ascii-faces   // to push local changes\
+\
+\
+
+\b\fs28 ####### add this to index.js (just to try out a local change \'97 can be anything)
+\b0\fs24 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+var\cf4  cool = require(\cf5 'cool-ascii-faces'\cf4 );
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\b\fs28 \cf0 ####### terminal 2: (in project directory). kill other processes running on 5000
+\b0\fs24 \
+\
+npm install\
+heroku local\
+\
+git add .\
+git commit -m \'93Demo\'94\
+git push heroku master\
+heroku open cool            // opens a new browser tab with local project spun up on heroku\
+\
+\
+PROVISION ADD-ONS:\
+heroku add ons:create papertrail    // good for logging full street of persistence, search, email & sms alerts\
+\
+heroku addons           // to see your addons\
+\
+heroku addons:open papertrail       // to view addon\
+\
+\
+START A CONSOLE:\
+\
+heroku run node\
+\
+	> var cool = require(\'91cool-ascii-faces\'92)\
+	> cool()\
+	> .exit\
+\
+heroku run bash\
+	$ ls\
+	$ exit\
+\
+\
+DEFINE CONFIG VARS: add to index.js\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs26 \cf4 \cb3 \expnd0\expndtw0\kerning0
+app.get(\cf5 '/times'\cf4 , \cf2 function\cf4 (request, response) \{\
+    \cf2 var\cf4  result = \cf5 ''\cf4 \
+    \cf2 var\cf4  times = process.env.TIMES || \cf6 \cb3 5\cf4 \cb3 \
+    \cf2 for\cf4  (i=\cf6 \cb3 0\cf4 \cb3 ; i < times; i++)\
+      result += i + \cf5 ' '\cf4 ;\
+  response.send(result);\
+\});
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\
+\'91heroku local\'92 looks at .env file\
+\
+\'91TIMES=2\'92 in .env file\
+\
+OR YOU CAN: \'91heroku config:set TIMES=2\'92 if you don\'92t want to use a .env file\
+and then view config vars with: \'91heroku config\'92\
+\
+\
+PROVISION A DATABASE:\
+\
+heroku addons:create heroku-postgressql:hobby-dev\
+\
+edit package.json to add the pg npm model to dependencies:\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs26 \cf6 \cb3 \expnd0\expndtw0\kerning0
+"dependencies"\cf4 \cb3 : \{\
+    \cf6 \cb3 "pg"\cf4 \cb3 : \cf5 "4.x"\cf4 ,\
+    \cf6 \cb3 "ejs"\cf4 \cb3 : \cf5 "2.3.3"\cf4 ,\
+    \cf6 \cb3 "express"\cf4 \cb3 : \cf5 "4.13.3"\cf4 ,\
+    \cf6 \cb3 "cool-ascii-faces"\cf4 \cb3 : \cf5 "1.3.3"\cf4 \
+\}
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\
+npm install\
+\
+now edit index.js:\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+var\cf4  pg = require(\cf5 'pg'\cf4 );\
+\
+app.get(\cf5 '/db'\cf4 , \cf2 function\cf4  (request, response) \{\
+  pg.connect(process.env.DATABASE_URL, \cf2 function\cf4 (err, client, done) \{\
+    client.query(\cf5 'SELECT * FROM test_table'\cf4 , \cf2 function\cf4 (err, result) \{\
+      done();\
+      \cf2 if\cf4  (err)\
+       \{ console.error(err); response.send(\cf5 "Error "\cf4  + err); \}\
+      \cf2 else\cf4 \
+       \{ response.render(\cf5 'pages/db'\cf4 , \{\cf6 \cb3 results\cf4 \cb3 : result.rows\} ); \}\
+    \});\
+  \});\
+\});
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\
+now when you access your app using the /db route, it will return all rows in the test_table table.\
+\
+heroku pg:info\
+watch heroku pg:info      // to continuously monitor db status\
+\
+https://devcenter.heroku.com/articles/heroku-postgresql#sharing-heroku-postgres-between-applications\
+\
+\
+//// idk here\
+\
+
+\f1\fs26 \cf5 \cb3 \expnd0\expndtw0\kerning0
+=> create table test_table (id integer, name text);\
+=> insert into test_table values (1, 'hello database');
+\f0\fs24 \cf0 \cb1 \kerning1\expnd0\expndtw0 \
+\
+\
+\
+heroku pg:sql [name of db]\
+	> SELECT * FROM users;\
+\
+\
+\
+// always have heroku do migrations}
